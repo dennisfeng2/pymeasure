@@ -26,18 +26,30 @@ from pymeasure.instruments import Instrument
 from copy import deepcopy
 
 
-def clean_closed_channels(list_init):
+def clean_closed_channels(output):
     """Cleans up the list returned by command ":ROUTe:CLOSe?", such that each entry is an integer denoting
     the channel number.
     """
-    list_final = deepcopy(list_init)
-    for i, entry in enumerate(list_final):
-        if isinstance(entry, float):
-            list_final[i] = int(entry)
-        elif isinstance(entry, str):
-            list_final[i] = int(entry.replace("(", "").replace(")", "").replace("@", ""))
-        assert isinstance(list_final[i], int)
-    return list_final
+    if isinstance(output, str):
+        s = output.replace("(", "").replace(")", "").replace("@", "")
+        if s == "":
+            return []
+        else:
+            return [int(s)]
+    elif isinstance(output, list):
+        list_final = []
+        for i, entry in enumerate(output):
+            if isinstance(entry, float) or isinstance(entry, int):
+                list_final += [int(entry)]
+            elif isinstance(entry, str):
+                list_final += [int(entry.replace("(", "").replace(")", "").replace("@", ""))]
+            else:
+                raise ValueError("Every entry must be a string, float, or int")
+            assert isinstance(list_final[i], int)
+        print(list_final)
+        return list_final
+    else:
+        raise ValueError("`output` must be a string or list.")
 
 
 class Keithley2750(Instrument):
