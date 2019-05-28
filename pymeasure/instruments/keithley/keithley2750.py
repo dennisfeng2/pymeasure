@@ -23,15 +23,17 @@
 #
 
 from pymeasure.instruments import Instrument
+from copy import deepcopy
 
 
 class Keithley2750(Instrument):
     """ Represents the Keithley2750 multimeter/switch system and provides a high-level interface for interacting
     with the instrument.
     """
-    # TODO test closed_channels
+
     closed_channels = Instrument.measurement(":ROUTe:CLOSe?",
-                                             "Reads the list of closed channels")
+                                             "Reads the list of closed channels",
+                                             get_process=clean_closed_channels)
 
     def __init__(self, adapter, **kwargs) -> None:
         super().__init__(adapter, "Keithley 2750 Multimeter/Switch System", **kwargs)
@@ -65,4 +67,15 @@ class Keithley2750(Instrument):
         self.close(133)  # Open channel 133. Read the above statement to explain this non-intuitive method call.
 
 
+def clean_closed_channels(list_init):
+    """Cleans up the list returned by command ":ROUTe:CLOSe?", such that each entry is an integer denoting
+    the channel number.
+    """
+    list_final = deepcopy(list_init)
+    for i, entry in enumerate(list_final):
+        if isinstance(entry, float):
+            list_final[i] = int(entry)
+        elif isinstance(entry, str):
+            list_final[i] = int(entry.replace("(", "").replace(")", "").replace("@", ""))
+        assert isinstance(list_final[i], int)
 
