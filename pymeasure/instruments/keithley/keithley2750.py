@@ -37,6 +37,7 @@ def clean_closed_channels(list_init):
         elif isinstance(entry, str):
             list_final[i] = int(entry.replace("(", "").replace(")", "").replace("@", ""))
         assert isinstance(list_final[i], int)
+    return list_final
 
 
 class Keithley2750(Instrument):
