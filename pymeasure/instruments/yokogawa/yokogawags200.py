@@ -64,10 +64,12 @@ class YokogawaGS200(Instrument):
                                        """mode (current is conjugate to voltage, and vice versa). Thus, current """
                                        """limit is only applicable when in 'voltage' mode""")
 
-    def __init__(self, adapter, **kwargs) -> None:
-        super().__init__(adapter, "Yokogawa GS200 Source", **kwargs)
+    def __init__(self, adapter, **kwargs):
+        super(YokogawaGS200, self).__init__(
+            adapter, "Yokogawa GS200 Source", **kwargs
+        )
 
-    def trigger_ramp_to_level(self, level: float, ramp_time: float) -> None:
+    def trigger_ramp_to_level(self, level, ramp_time):
         """
         Ramp the output level from its current value to "level" in time "ramp_time". This method will NOT wait until
         the ramp is finished (thus, it will not block further code evaluation).
@@ -82,17 +84,17 @@ class YokogawaGS200(Instrument):
         if level > self.source_range * 1.2:
             raise ValueError("Level must be within 1.2 * source_range, otherwise the Yokogawa will produce an error.")
         if ramp_time < MIN_RAMP_TIME:
-            warnings.warn(f'Ramp time of {ramp_time}s is below the minimum ramp time of {MIN_RAMP_TIME}s,'
-                          f'so the Yokogawa will instead be instantaneously set to the desired level.')
+            warnings.warn('Ramp time of {}s is below the minimum ramp time of {}s, so the Yokogawa will instead be '
+                          'instantaneously set to the desired level.'.format(ramp_time, MIN_RAMP_TIME))
             self.source_level = level
         else:
             # Use the Yokogawa's "program" mode to create the ramp
             ramp_program = ":program:edit:start;" \
-                           f":source:level {level};" \
-                           ":program:edit:end;"
+                           ":source:level {};" \
+                           ":program:edit:end;".format(level)
             # set "interval time" equal to "slope time" to make a continuous ramp
-            ramp_program += f":program:interval {ramp_time};" \
-                            f":program:slope {ramp_time};"
+            ramp_program += ":program:interval {};" \
+                            ":program:slope {};".format(ramp_time, ramp_time)
             # run it once
             ramp_program += ":program:repeat 0;" \
                             ":program:run"
