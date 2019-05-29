@@ -43,11 +43,13 @@ class BKPrecision9130B(Instrument):
                                         validator=strict_discrete_set, values={True: 1, False: 0}, map_values=True)
 
     channel = Instrument.control('INSTrument:SELect?', 'INSTrument:SELect CH%d',
-                                 f"""An integer property used to control which channel is selected. Can only take""" 
-                                 f"""values {CHANNEL_NUMS}.""",
+                                 """An integer property used to control which channel is selected. Can only take""" 
+                                 """values {}.""".format(CHANNEL_NUMS),
                                  validator=strict_discrete_set, values=CHANNEL_NUMS)
 
-    def __init__(self, adapter, **kwargs) -> None:
-        super().__init__(adapter, "BK Precision 9130B Source", **kwargs)
+    def __init__(self, adapter, **kwargs):
+        super(BKPrecision9130B, self).__init__(
+            adapter, "BK Precision 9130B Source", **kwargs
+        )
 
 
