@@ -23,7 +23,7 @@
 #
 
 from pymeasure.instruments import Instrument
-from pymeasure.instruments.validators import strict_discrete_set
+from pymeasure.instruments.validators import strict_discrete_set, truncated_range
 
 CHANNEL_NUMS = [1, 2, 3]
 
@@ -31,11 +31,10 @@ CHANNEL_NUMS = [1, 2, 3]
 class BKPrecision9130B(Instrument):
     """ Represents the BK Precision 9130B DC Power Supply interface for interacting with the instrument. """
 
-    voltage = Instrument.control('MEASure:SCALar:VOLTage:DC?', 'SOURce:VOLTage:LEVel:IMMediate:AMPLitude %g',
-                                 """Floating point property used to control voltage of the selected channel.""")
-
     current = Instrument.control('MEASure:SCALar:CURRent:DC?', 'SOURce:CURRent:LEVel:IMMediate:AMPLitude %g',
-                                 """Floating point property used to control current of the selected channel.""")
+                                 """Floating point property used to control current of the selected channel.""",
+                                 validator=truncated_range,
+                                 values=[0, 3])
 
     source_enabled = Instrument.control('SOURce:CHANnel:OUTPut:STATe?', 'SOURce:CHANnel:OUTPut:STATe %d',
                                         """A boolean property that controls whether the source is enabled, takes """
@@ -52,4 +51,16 @@ class BKPrecision9130B(Instrument):
             adapter, "BK Precision 9130B Source", **kwargs
         )
 
+    @property
+    def voltage(self):
+        """Floating point property used to control voltage of the selected channel."""
+        return self.ask("MEASure:SCALar:VOLTage:DC?")
+
+    @voltage.setter
+    def voltage(self, level):
+        if self.channel == 3:
+            new_level = truncated_range(level, [0, 5])
+        else:
+            new_level = truncated_range(level, [0, 30])
+        self.write("SOURce:VOLTage:LEVel:IMMediate:AMPLitude %g" % new_level)
 
